@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { solutions, type Solution } from "./data/solutions";
 import {
   Search,
   Home,
