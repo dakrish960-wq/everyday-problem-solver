@@ -1450,7 +1450,7 @@ export const solutions: Solution[] = [
       "Use an appropriate plant treatment according to its label.",
       "Seek local gardening advice if the condition spreads."
     ]
-  }
+  },
     // 101
   {
     id: 101,
