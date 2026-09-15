@@ -1,7 +1,7 @@
-```yaml
+
 name: Build Android APK and AAB
 
-on:
+"on":
   workflow_dispatch:
   push:
     branches:
@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -37,9 +38,11 @@ jobs:
         with:
           packages: ''
 
-      - name: Install Android SDK packages
+      - name: Install Android SDK
         run: |
-          sdkmanager "platform-tools" "platforms;android-37" "build-tools;35.0.0"
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-37"
+          sdkmanager "build-tools;35.0.0"
 
       - name: Add Capacitor Android
         run: |
@@ -47,239 +50,68 @@ jobs:
             npx cap add android
           fi
 
-      - name: Update Android Gradle Plugin
+      - name: Set compile SDK 37
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
+          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/variables.gradle
+          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/build.gradle
+          sed -i 's/compileSdk 35/compileSdk 37/g' android/app/build.gradle
 
-          gradle_file = Path("android/build.gradle")
-
-          if not gradle_file.exists():
-              raise SystemExit("android/build.gradle not found")
-
-          text = gradle_file.read_text()
-
-          text = text.replace(
-              "com.android.tools.build:gradle:8.7.2",
-              "com.android.tools.build:gradle:8.13.0"
-          )
-
-          gradle_file.write_text(text)
-
-          print("Android Gradle Plugin updated to 8.13.0")
-          PY
-
-      - name: Update Gradle Wrapper
+      - name: Update Gradle
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
+          cd android
+          ./gradlew wrapper --gradle-version 8.14.3
 
-          wrapper = Path(
-              "android/gradle/wrapper/gradle-wrapper.properties"
-          )
-
-          if not wrapper.exists():
-              raise SystemExit("Gradle wrapper not found")
-
-          text = wrapper.read_text()
-
-          text = text.replace(
-              "gradle-8.11.1-all.zip",
-              "gradle-8.14.3-all.zip"
-          )
-
-          wrapper.write_text(text)
-
-          print("Gradle wrapper updated to 8.14.3")
-          PY
-
-      - name: Update compile SDK
+      - name: Add Start.io dependency
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
+          sed -i '/dependencies {/a\    implementation "com.startapp:inapp-sdk:5.3.2"' android/app/build.gradle
 
-          app_gradle = Path("android/app/build.gradle")
-
-          if not app_gradle.exists():
-              raise SystemExit("android/app/build.gradle not found")
-
-          text = app_gradle.read_text()
-
-          text = text.replace(
-              "compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35",
-              "compileSdk 37"
-          )
-
-          text = text.replace(
-              "compileSdk = project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35",
-              "compileSdk = 37"
-          )
-
-          app_gradle.write_text(text)
-
-          print("compileSdk updated to 37")
-          PY
-
-      - name: Configure Start.io SDK
+      - name: Configure Start.io MainActivity
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
+          ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -n 1)
 
-          # -------------------------------------------------
-          # Add Start.io dependency
-          # -------------------------------------------------
+          PACKAGE=$(grep '^package ' "$ACTIVITY")
 
-          gradle = Path("android/app/build.gradle")
+          cat > "$ACTIVITY" <<EOF
+          $PACKAGE
 
-          text = gradle.read_text()
+          import android.os.Bundle;
+          import android.view.Gravity;
+          import android.widget.FrameLayout;
 
-          dependency = "implementation 'com.startapp:inapp-sdk:5.3.2'"
+          import com.getcapacitor.BridgeActivity;
+          import com.startapp.sdk.ads.banner.Banner;
+          import com.startapp.sdk.adsbase.StartAppSDK;
 
-          if dependency not in text:
-              if "dependencies {" not in text:
-                  raise SystemExit(
-                      "dependencies block not found"
-                  )
+          public class MainActivity extends BridgeActivity {
 
-              text = text.replace(
-                  "dependencies {",
-                  "dependencies {\n    " + dependency,
-                  1
-              )
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
 
-              gradle.write_text(text)
+                  StartAppSDK.initParams(this, "208328103")
+                      .setReturnAdsEnabled(false)
+                      .setCallback(() -> {
 
-          print("Start.io SDK dependency added.")
+                          Banner banner = new Banner(this);
 
-          # -------------------------------------------------
-          # Find MainActivity.java
-          # -------------------------------------------------
+                          FrameLayout.LayoutParams params =
+                              new FrameLayout.LayoutParams(
+                                  FrameLayout.LayoutParams.MATCH_PARENT,
+                                  FrameLayout.LayoutParams.WRAP_CONTENT
+                              );
 
-          java_files = list(
-              Path(
-                  "android/app/src/main/java"
-              ).rglob("MainActivity.java")
-          )
+                          params.gravity = Gravity.BOTTOM;
 
-          if not java_files:
-              raise SystemExit(
-                  "MainActivity.java not found"
-              )
+                          addContentView(banner, params);
+                      })
+                      .init();
+              }
+          }
+          EOF
 
-          activity = java_files[0]
-
-          original = activity.read_text()
-
-          package_line = ""
-
-          for line in original.splitlines():
-              if line.startswith("package "):
-                  package_line = line
-                  break
-
-          if not package_line:
-              raise SystemExit(
-                  "Package declaration not found"
-              )
-
-          # -------------------------------------------------
-          # Create MainActivity
-          # -------------------------------------------------
-
-          new_activity = f"""{package_line}
-
-import android.os.Bundle;
-import android.view.Gravity;
-import android.widget.FrameLayout;
-
-import com.getcapacitor.BridgeActivity;
-import com.startapp.sdk.ads.banner.Banner;
-import com.startapp.sdk.adsbase.StartAppSDK;
-
-public class MainActivity extends BridgeActivity {{
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {{
-        super.onCreate(savedInstanceState);
-
-        StartAppSDK.initParams(this, "208328103")
-            .setReturnAdsEnabled(false)
-            .setCallback(() -> {{
-
-                Banner banner = new Banner(this);
-
-                FrameLayout.LayoutParams params =
-                    new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT
-                    );
-
-                params.gravity = Gravity.BOTTOM;
-
-                addContentView(banner, params);
-            }})
-            .init();
-    }}
-}}
-"""
-
-          activity.write_text(new_activity)
-
-          print(
-              f"Start.io configured in {activity}"
-          )
-
-          # -------------------------------------------------
-          # Android permissions
-          # -------------------------------------------------
-
-          manifest = Path(
-              "android/app/src/main/AndroidManifest.xml"
-          )
-
-          if manifest.exists():
-
-              manifest_text = manifest.read_text()
-
-              internet = (
-                  '<uses-permission '
-                  'android:name="android.permission.INTERNET" />'
-              )
-
-              network = (
-                  '<uses-permission '
-                  'android:name="android.permission.ACCESS_NETWORK_STATE" />'
-              )
-
-              if "android.permission.INTERNET" not in manifest_text:
-                  pos = manifest_text.find(">")
-
-                  manifest_text = (
-                      manifest_text[:pos + 1]
-                      + "\n    "
-                      + internet
-                      + "\n    "
-                      + network
-                      + manifest_text[pos + 1:]
-                  )
-
-              elif (
-                  "android.permission.ACCESS_NETWORK_STATE"
-                  not in manifest_text
-              ):
-                  pos = manifest_text.find(">")
-
-                  manifest_text = (
-                      manifest_text[:pos + 1]
-                      + "\n    "
-                      + network
-                      + manifest_text[pos + 1:]
-                  )
-
-              manifest.write_text(manifest_text)
-
-          print("Android permissions configured.")
-          PY
+      - name: Add Internet permission
+        run: |
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
 
       - name: Sync Capacitor
         run: npx cap sync android
