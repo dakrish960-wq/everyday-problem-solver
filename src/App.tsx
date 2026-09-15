@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+```tsx
+import { useEffect, useMemo, useState } from "react";
 import { solutions, type Solution } from "./data/solutions";
 import {
   Search,
@@ -18,7 +19,12 @@ import {
   Info,
   ShieldCheck,
   AlertTriangle,
-  Database
+  Database,
+  Share2,
+  Copy,
+  Check,
+  Clock,
+  Trash2
 } from "lucide-react";
 
 type Category = {
@@ -33,6 +39,7 @@ type Page =
   | "categories"
   | "category-solutions"
   | "favorites"
+  | "history"
   | "tools"
   | "percentage"
   | "age"
@@ -125,6 +132,10 @@ const categories: Category[] = [
   }
 ];
 
+const FAVORITES_KEY = "everyday-problem-solver-favorites";
+const HISTORY_KEY = "everyday-problem-solver-history";
+const DARK_MODE_KEY = "everyday-problem-solver-dark-mode";
+
 function App() {
   const [activePage, setActivePage] = useState<Page>("home");
   const [search, setSearch] = useState("");
@@ -132,8 +143,11 @@ function App() {
     useState<string | null>(null);
   const [selectedSolution, setSelectedSolution] =
     useState<Solution | null>(null);
+
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [history, setHistory] = useState<number[]>([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [percentageValue, setPercentageValue] = useState("");
   const [percentageNumber, setPercentageNumber] = useState("");
@@ -144,6 +158,40 @@ function App() {
   const [loanRate, setLoanRate] = useState("");
   const [loanYears, setLoanYears] = useState("");
 
+  useEffect(() => {
+    try {
+      const savedFavorites = localStorage.getItem(FAVORITES_KEY);
+      const savedHistory = localStorage.getItem(HISTORY_KEY);
+      const savedDarkMode = localStorage.getItem(DARK_MODE_KEY);
+
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
+
+      if (savedHistory) {
+        setHistory(JSON.parse(savedHistory));
+      }
+
+      if (savedDarkMode) {
+        setDarkMode(JSON.parse(savedDarkMode));
+      }
+    } catch {
+      // Ignore invalid local storage data.
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem(DARK_MODE_KEY, JSON.stringify(darkMode));
+  }, [darkMode]);
+
   const filteredSolutions = useMemo(() => {
     const query = search.toLowerCase().trim();
 
@@ -152,7 +200,7 @@ function App() {
         solution.title,
         solution.category,
         solution.quickFix,
-        ...solution.steps
+        ...(solution.steps || [])
       ]
         .join(" ")
         .toLowerCase();
@@ -179,6 +227,12 @@ function App() {
   const openSolution = (solution: Solution) => {
     setSelectedSolution(solution);
     setActivePage("solution");
+    setCopied(false);
+
+    setHistory((current) => [
+      solution.id,
+      ...current.filter((id) => id !== solution.id)
+    ].slice(0, 20));
   };
 
   const goHome = () => {
@@ -190,6 +244,7 @@ function App() {
 
   const goBack = (page: Page) => {
     setSelectedSolution(null);
+    setCopied(false);
     setActivePage(page);
   };
 
@@ -285,6 +340,56 @@ function App() {
     };
   };
 
+  const copySolution = async () => {
+    if (!selectedSolution) return;
+
+    const text = [
+      selectedSolution.title,
+      "",
+      "Quick Fix:",
+      selectedSolution.quickFix,
+      "",
+      "Steps:",
+      ...(selectedSolution.steps || []).map(
+        (step, index) => `${index + 1}. ${step}`
+      )
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const shareSolution = async () => {
+    if (!selectedSolution) return;
+
+    const text = `${selectedSolution.title}\n\n${selectedSolution.quickFix}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: selectedSolution.title,
+          text
+        });
+      } catch {
+        // User cancelled sharing.
+      }
+    } else {
+      await copySolution();
+    }
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
   const renderHome = () => (
     <>
       <section className="hero">
@@ -312,6 +417,46 @@ function App() {
         />
       </div>
 
+      {search.trim() && (
+        <section className="section">
+          <div className="section-header">
+            <h2>Search Results</h2>
+            <span>{filteredSolutions.length}</span>
+          </div>
+
+          <div className="solution-list">
+            {filteredSolutions.length === 0 ? (
+              <div className="empty-state">
+                <Search size={36} />
+                <h3>No solutions found</h3>
+                <p>
+                  Try another keyword or problem.
+                </p>
+              </div>
+            ) : (
+              filteredSolutions.slice(0, 10).map(
+                (solution) => (
+                  <button
+                    className="solution-card"
+                    key={solution.id}
+                    onClick={() =>
+                      openSolution(solution)
+                    }
+                  >
+                    <div>
+                      <h3>{solution.title}</h3>
+                      <p>{solution.quickFix}</p>
+                    </div>
+
+                    <ChevronRight size={20} />
+                  </button>
+                )
+              )
+            )}
+          </div>
+        </section>
+      )}
+
       <section className="section">
         <div className="section-header">
           <h2>Popular Problems</h2>
@@ -328,36 +473,22 @@ function App() {
         </div>
 
         <div className="solution-list">
-          {filteredSolutions.length === 0 ? (
-            <div className="empty-state">
-              <Search size={36} />
+          {solutions.slice(0, 6).map((solution) => (
+            <button
+              className="solution-card"
+              key={solution.id}
+              onClick={() =>
+                openSolution(solution)
+              }
+            >
+              <div>
+                <h3>{solution.title}</h3>
+                <p>{solution.quickFix}</p>
+              </div>
 
-              <h3>No solutions found</h3>
-
-              <p>
-                Try searching for another problem.
-              </p>
-            </div>
-          ) : (
-            filteredSolutions
-              .slice(0, 6)
-              .map((solution) => (
-                <button
-                  className="solution-card"
-                  key={solution.id}
-                  onClick={() =>
-                    openSolution(solution)
-                  }
-                >
-                  <div>
-                    <h3>{solution.title}</h3>
-                    <p>{solution.quickFix}</p>
-                  </div>
-
-                  <ChevronRight size={20} />
-                </button>
-              ))
-          )}
+              <ChevronRight size={20} />
+            </button>
+          ))}
         </div>
       </section>
 
@@ -415,29 +546,41 @@ function App() {
       </div>
 
       <div className="category-grid large">
-        {categories.map((category) => (
-          <button
-            className="category-card"
-            key={category.id}
-            onClick={() => {
-              setSelectedCategory(category.id);
-              setSearch("");
-              setActivePage(
-                "category-solutions"
-              );
-            }}
-          >
-            <span className="category-icon">
-              {category.icon}
-            </span>
+        {categories.map((category) => {
+          const count = solutions.filter(
+            (solution) =>
+              solution.category === category.id
+          ).length;
 
-            <strong>{category.name}</strong>
+          return (
+            <button
+              className="category-card"
+              key={category.id}
+              onClick={() => {
+                setSelectedCategory(category.id);
+                setSearch("");
+                setActivePage(
+                  "category-solutions"
+                );
+              }}
+            >
+              <span className="category-icon">
+                {category.icon}
+              </span>
 
-            <small>
-              {category.description}
-            </small>
-          </button>
-        ))}
+              <strong>{category.name}</strong>
+
+              <small>
+                {category.description}
+              </small>
+
+              <small>
+                {count} solution
+                {count !== 1 ? "s" : ""}
+              </small>
+            </button>
+          );
+        })}
       </div>
     </>
   );
@@ -529,7 +672,6 @@ function App() {
       <>
         <div className="page-title">
           <h1>Favorites</h1>
-
           <p>Your saved solutions.</p>
         </div>
 
@@ -540,8 +682,8 @@ function App() {
             <h3>No favorites yet</h3>
 
             <p>
-              Save useful solutions here for quick
-              access.
+              Open a solution and tap the heart icon
+              to save it here.
             </p>
           </div>
         ) : (
@@ -563,6 +705,72 @@ function App() {
               </button>
             ))}
           </div>
+        )}
+      </>
+    );
+  };
+
+  const renderHistory = () => {
+    const historySolutions = history
+      .map((id) =>
+        solutions.find(
+          (solution) => solution.id === id
+        )
+      )
+      .filter(
+        (solution): solution is Solution =>
+          Boolean(solution)
+      );
+
+    return (
+      <>
+        <div className="page-title">
+          <h1>Recently Viewed</h1>
+          <p>Your recently opened solutions.</p>
+        </div>
+
+        {historySolutions.length === 0 ? (
+          <div className="empty-state">
+            <Clock size={42} />
+
+            <h3>No recent solutions</h3>
+
+            <p>
+              Solutions you open will appear here.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="section-header">
+              <span>
+                {historySolutions.length} recent
+              </span>
+
+              <button onClick={clearHistory}>
+                <Trash2 size={16} />
+                Clear
+              </button>
+            </div>
+
+            <div className="solution-list">
+              {historySolutions.map((solution) => (
+                <button
+                  className="solution-card"
+                  key={solution.id}
+                  onClick={() =>
+                    openSolution(solution)
+                  }
+                >
+                  <div>
+                    <h3>{solution.title}</h3>
+                    <p>{solution.quickFix}</p>
+                  </div>
+
+                  <ChevronRight size={20} />
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </>
     );
@@ -602,9 +810,7 @@ function App() {
 
       <button
         className="tool-card"
-        onClick={() =>
-          setActivePage("age")
-        }
+        onClick={() => setActivePage("age")}
       >
         <div className="tool-icon">
           <Calendar size={28} />
@@ -623,9 +829,7 @@ function App() {
 
       <button
         className="tool-card"
-        onClick={() =>
-          setActivePage("loan")
-        }
+        onClick={() => setActivePage("loan")}
       >
         <div className="tool-icon">
           <DollarSign size={28} />
@@ -891,7 +1095,6 @@ function App() {
 
       <div className="page-title">
         <h1>About</h1>
-
         <p>About Everyday Problem Solver.</p>
       </div>
 
@@ -911,8 +1114,9 @@ function App() {
 
         <p>
           The app includes troubleshooting guides,
-          categories, search, favorites, useful
-          calculators and other everyday utilities.
+          categories, search, favorites, recently
+          viewed solutions, useful calculators and
+          other everyday utilities.
         </p>
 
         <p>
@@ -939,7 +1143,6 @@ function App() {
 
       <div className="page-title">
         <h1>Privacy Policy</h1>
-
         <p>Your privacy matters to us.</p>
       </div>
 
@@ -962,22 +1165,22 @@ function App() {
           password to use its main features.
         </p>
 
-        <h3>Search and Favorites</h3>
+        <h3>Search, Favorites and History</h3>
 
         <p>
-          Search terms and favorite selections are
-          used to provide the app's features. The app
-          does not require you to submit personal
-          information to use these features.
+          Search terms, favorite selections and
+          recently viewed solutions are used only
+          to provide app features. These selections
+          are stored locally on the device.
         </p>
 
-        <h3>Device Information</h3>
+        <h3>Advertising</h3>
 
         <p>
-          If advertising or third-party services are
-          enabled in a future version, those services
-          may process information according to their
-          own privacy policies.
+          This app may display advertisements from
+          third-party advertising services. Those
+          services may process information according
+          to their own privacy policies.
         </p>
 
         <h3>Children's Privacy</h3>
@@ -1065,6 +1268,14 @@ function App() {
           prediction or professional advice.
         </p>
 
+        <h3>Marriage Guidance</h3>
+
+        <p>
+          Marriage and compatibility information is
+          general guidance only and does not guarantee
+          compatibility or future outcomes.
+        </p>
+
         <h3>Property Information</h3>
 
         <p>
@@ -1130,7 +1341,6 @@ function App() {
 
         <div className="result-box">
           <span>Total Solutions</span>
-
           <strong>{solutions.length}</strong>
         </div>
 
@@ -1212,12 +1422,39 @@ function App() {
         <button
           className="settings-item"
           onClick={() =>
+            setActivePage("favorites")
+          }
+        >
+          <div>
+            <Star size={20} />
+            <span>Favorites</span>
+          </div>
+
+          <strong>{favorites.length}</strong>
+        </button>
+
+        <button
+          className="settings-item"
+          onClick={() =>
+            setActivePage("history")
+          }
+        >
+          <div>
+            <Clock size={20} />
+            <span>Recently Viewed</span>
+          </div>
+
+          <strong>{history.length}</strong>
+        </button>
+
+        <button
+          className="settings-item"
+          onClick={() =>
             setActivePage("offline")
           }
         >
           <div>
             <Database size={20} />
-
             <span>Offline Content</span>
           </div>
 
@@ -1225,18 +1462,6 @@ function App() {
             {solutions.length} Solutions
           </strong>
         </button>
-
-        <div className="settings-item">
-          <div>
-            <Star size={20} />
-
-            <span>Favorites</span>
-          </div>
-
-          <strong>
-            {favorites.length}
-          </strong>
-        </div>
 
         <button
           className="settings-item"
@@ -1246,7 +1471,6 @@ function App() {
         >
           <div>
             <Info size={20} />
-
             <span>About</span>
           </div>
 
@@ -1261,7 +1485,6 @@ function App() {
         >
           <div>
             <ShieldCheck size={20} />
-
             <span>Privacy Policy</span>
           </div>
 
@@ -1276,7 +1499,6 @@ function App() {
         >
           <div>
             <AlertTriangle size={20} />
-
             <span>Disclaimer</span>
           </div>
 
@@ -1302,6 +1524,20 @@ function App() {
           selectedSolution.category
       )?.name ||
       selectedSolution.category;
+
+    const relatedSolutions = solutions
+      .filter(
+        (solution) =>
+          solution.category ===
+            selectedSolution.category &&
+          solution.id !== selectedSolution.id
+      )
+      .slice(0, 3);
+
+    const solutionWithDisclaimer =
+      selectedSolution as Solution & {
+        disclaimer?: string;
+      };
 
     return (
       <>
@@ -1367,7 +1603,7 @@ function App() {
             <h2>Step-by-Step Solution</h2>
 
             <ol>
-              {selectedSolution.steps.map(
+              {(selectedSolution.steps || []).map(
                 (step, index) => (
                   <li key={index}>
                     {step}
@@ -1387,6 +1623,26 @@ function App() {
             </section>
           )}
 
+          {selectedSolution.professional && (
+            <section className="info-card">
+              <h2>When to Call a Professional</h2>
+
+              <p>
+                {selectedSolution.professional}
+              </p>
+            </section>
+          )}
+
+          {solutionWithDisclaimer.disclaimer && (
+            <section className="disclaimer-box">
+              <h2>Important</h2>
+
+              <p>
+                {solutionWithDisclaimer.disclaimer}
+              </p>
+            </section>
+          )}
+
           <section className="warning-box">
             <h2>General Safety Warning</h2>
 
@@ -1400,7 +1656,7 @@ function App() {
           </section>
 
           <section className="disclaimer-box">
-            <h2>Important</h2>
+            <h2>General Information</h2>
 
             <p>
               Information in this app is provided
@@ -1410,6 +1666,82 @@ function App() {
               other expert advice.
             </p>
           </section>
+
+          <div className="solution-actions">
+            <button
+              className="tool-card"
+              onClick={copySolution}
+            >
+              {copied ? (
+                <Check size={22} />
+              ) : (
+                <Copy size={22} />
+              )}
+
+              <div>
+                <h3>
+                  {copied
+                    ? "Copied"
+                    : "Copy Solution"}
+                </h3>
+
+                <p>
+                  Copy the solution to your
+                  clipboard.
+                </p>
+              </div>
+            </button>
+
+            <button
+              className="tool-card"
+              onClick={shareSolution}
+            >
+              <Share2 size={22} />
+
+              <div>
+                <h3>Share Solution</h3>
+
+                <p>
+                  Share this solution with
+                  others.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {relatedSolutions.length > 0 && (
+            <section className="section">
+              <div className="section-header">
+                <h2>Related Problems</h2>
+              </div>
+
+              <div className="solution-list">
+                {relatedSolutions.map(
+                  (solution) => (
+                    <button
+                      className="solution-card"
+                      key={solution.id}
+                      onClick={() =>
+                        openSolution(solution)
+                      }
+                    >
+                      <div>
+                        <h3>
+                          {solution.title}
+                        </h3>
+
+                        <p>
+                          {solution.quickFix}
+                        </p>
+                      </div>
+
+                      <ChevronRight size={20} />
+                    </button>
+                  )
+                )}
+              </div>
+            </section>
+          )}
         </article>
       </>
     );
@@ -1428,6 +1760,9 @@ function App() {
 
       case "favorites":
         return renderFavorites();
+
+      case "history":
+        return renderHistory();
 
       case "tools":
         return renderTools();
@@ -1563,9 +1898,9 @@ function App() {
             activePage === "settings" ||
             activePage === "about" ||
             activePage === "privacy" ||
-            activePage ===
-              "disclaimer" ||
-            activePage === "offline"
+            activePage === "disclaimer" ||
+            activePage === "offline" ||
+            activePage === "history"
               ? "active"
               : ""
           }
@@ -1583,3 +1918,4 @@ function App() {
 }
 
 export default App;
+```
