@@ -1,3 +1,4 @@
+```yaml
 name: Build Android APK and AAB
 
 "on":
@@ -11,11 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: 24
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web application
+      - name: Build web app
         run: npm run build
 
       - name: Setup Java
@@ -45,72 +45,21 @@ jobs:
 
       - name: Add Capacitor Android
         run: |
-          if [ ! -d "android" ]; then
+          if [ ! -d android ]; then
             npx cap add android
           fi
 
-      - name: Set compile SDK 37
+      - name: Configure Android
         run: |
-          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/variables.gradle
-          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/build.gradle
-          sed -i 's/compileSdk 35/compileSdk 37/g' android/app/build.gradle
+          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/variables.gradle || true
+          sed -i 's/compileSdk 35/compileSdk 37/g' android/app/build.gradle || true
+
+          sed -i '/dependencies {/a\    implementation "com.startapp:inapp-sdk:5.3.2"' android/app/build.gradle
 
       - name: Update Gradle
         run: |
           cd android
           ./gradlew wrapper --gradle-version 8.14.3
-
-      - name: Add Start.io dependency
-        run: |
-          sed -i '/dependencies {/a\    implementation "com.startapp:inapp-sdk:5.3.2"' android/app/build.gradle
-
-      - name: Configure Start.io MainActivity
-        run: |
-          ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -n 1)
-
-          PACKAGE=$(grep '^package ' "$ACTIVITY")
-
-          cat > "$ACTIVITY" <<EOF
-          $PACKAGE
-
-          import android.os.Bundle;
-          import android.view.Gravity;
-          import android.widget.FrameLayout;
-
-          import com.getcapacitor.BridgeActivity;
-          import com.startapp.sdk.ads.banner.Banner;
-          import com.startapp.sdk.adsbase.StartAppSDK;
-
-          public class MainActivity extends BridgeActivity {
-
-              @Override
-              public void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-
-                  StartAppSDK.initParams(this, "208328103")
-                      .setReturnAdsEnabled(false)
-                      .setCallback(() -> {
-
-                          Banner banner = new Banner(this);
-
-                          FrameLayout.LayoutParams params =
-                              new FrameLayout.LayoutParams(
-                                  FrameLayout.LayoutParams.MATCH_PARENT,
-                                  FrameLayout.LayoutParams.WRAP_CONTENT
-                              );
-
-                          params.gravity = Gravity.BOTTOM;
-
-                          addContentView(banner, params);
-                      })
-                      .init();
-              }
-          }
-          EOF
-
-      - name: Add Internet permission
-        run: |
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
 
       - name: Sync Capacitor
         run: npx cap sync android
