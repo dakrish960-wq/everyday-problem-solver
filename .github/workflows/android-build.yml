@@ -44,6 +44,114 @@ jobs:
             npx cap add android
           fi
 
+      - name: Configure Start.io SDK
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          app_gradle = Path("android/app/build.gradle")
+
+          if not app_gradle.exists():
+              raise SystemExit("android/app/build.gradle was not created")
+
+          text = app_gradle.read_text()
+
+          dependency = "implementation 'com.startapp:inapp-sdk:5.+'"
+
+          if dependency not in text:
+              marker = "dependencies {"
+              if marker not in text:
+                  raise SystemExit("dependencies block not found in android/app/build.gradle")
+
+              text = text.replace(
+                  marker,
+                  marker + "\n    " + dependency,
+                  1
+              )
+
+              app_gradle.write_text(text)
+
+          print("Start.io dependency configured.")
+
+          # Find MainActivity.java
+          java_files = list(
+              Path("android/app/src/main/java").rglob("MainActivity.java")
+          )
+
+          if not java_files:
+              raise SystemExit("MainActivity.java not found")
+
+          main_activity = java_files[0]
+          text = main_activity.read_text()
+
+          # Add imports
+          if "import android.os.Bundle;" not in text:
+              text = text.replace(
+                  "package ",
+                  "import android.os.Bundle;\n\npackage ",
+                  1
+              )
+
+          if "import android.view.Gravity;" not in text:
+              text = text.replace(
+                  "import android.os.Bundle;",
+                  "import android.os.Bundle;\nimport android.view.Gravity;\nimport android.view.ViewGroup;",
+                  1
+              )
+
+          if "import com.startapp.sdk.ads.banner.Banner;" not in text:
+              text = text.replace(
+                  "import android.view.ViewGroup;",
+                  "import android.view.ViewGroup;\nimport com.startapp.sdk.ads.banner.Banner;\nimport com.startapp.sdk.adsbase.StartAppSDK;",
+                  1
+              )
+
+          # Add onCreate only once
+          if "StartAppSDK.initParams" not in text:
+
+              on_create = """
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  StartAppSDK.initParams(this, "208328103")
+                      .setReturnAdsEnabled(false)
+                      .setCallback(() -> {
+                          Banner banner = new Banner(this);
+
+                          ViewGroup.LayoutParams params =
+                              new ViewGroup.LayoutParams(
+                                  ViewGroup.LayoutParams.MATCH_PARENT,
+                                  ViewGroup.LayoutParams.WRAP_CONTENT
+                              );
+
+                          addContentView(banner, params);
+                          banner.setGravity(Gravity.BOTTOM);
+                      })
+                      .init();
+              }
+              """
+
+              text = text.rstrip()
+
+              last_brace = text.rfind("}")
+
+              if last_brace == -1:
+                  raise SystemExit("Could not find end of MainActivity.java")
+
+              text = (
+                  text[:last_brace]
+                  + on_create
+                  + "\n"
+                  + text[last_brace:]
+              )
+
+              main_activity.write_text(text)
+
+          print(f"Start.io configured in {main_activity}")
+
+          PY
+
       - name: Sync Capacitor
         run: npx cap sync android
 
