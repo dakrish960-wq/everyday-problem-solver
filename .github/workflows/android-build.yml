@@ -1,3 +1,4 @@
+```yaml
 name: Build Android APK and AAB
 
 on:
@@ -32,13 +33,13 @@ jobs:
           java-version: 21
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: ''
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;35.0.0"
 
       - name: Add Capacitor Android
         run: |
@@ -46,78 +47,238 @@ jobs:
             npx cap add android
           fi
 
-      - name: Configure Start.io
-        shell: bash
+      - name: Update Android Gradle Plugin
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
+          gradle_file = Path("android/build.gradle")
+
+          if not gradle_file.exists():
+              raise SystemExit("android/build.gradle not found")
+
+          text = gradle_file.read_text()
+
+          text = text.replace(
+              "com.android.tools.build:gradle:8.7.2",
+              "com.android.tools.build:gradle:8.13.0"
+          )
+
+          gradle_file.write_text(text)
+
+          print("Android Gradle Plugin updated to 8.13.0")
+          PY
+
+      - name: Update Gradle Wrapper
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          wrapper = Path(
+              "android/gradle/wrapper/gradle-wrapper.properties"
+          )
+
+          if not wrapper.exists():
+              raise SystemExit("Gradle wrapper not found")
+
+          text = wrapper.read_text()
+
+          text = text.replace(
+              "gradle-8.11.1-all.zip",
+              "gradle-8.14.3-all.zip"
+          )
+
+          wrapper.write_text(text)
+
+          print("Gradle wrapper updated to 8.14.3")
+          PY
+
+      - name: Update compile SDK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          app_gradle = Path("android/app/build.gradle")
+
+          if not app_gradle.exists():
+              raise SystemExit("android/app/build.gradle not found")
+
+          text = app_gradle.read_text()
+
+          text = text.replace(
+              "compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35",
+              "compileSdk 37"
+          )
+
+          text = text.replace(
+              "compileSdk = project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35",
+              "compileSdk = 37"
+          )
+
+          app_gradle.write_text(text)
+
+          print("compileSdk updated to 37")
+          PY
+
+      - name: Configure Start.io SDK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # -------------------------------------------------
+          # Add Start.io dependency
+          # -------------------------------------------------
+
           gradle = Path("android/app/build.gradle")
+
           text = gradle.read_text()
 
-          dependency = "implementation 'com.startapp:inapp-sdk:5.+'"
+          dependency = "implementation 'com.startapp:inapp-sdk:5.3.2'"
 
           if dependency not in text:
+              if "dependencies {" not in text:
+                  raise SystemExit(
+                      "dependencies block not found"
+                  )
+
               text = text.replace(
                   "dependencies {",
                   "dependencies {\n    " + dependency,
                   1
               )
+
               gradle.write_text(text)
 
-          activity = list(
-              Path("android/app/src/main/java").rglob("MainActivity.java")
-          )[0]
+          print("Start.io SDK dependency added.")
+
+          # -------------------------------------------------
+          # Find MainActivity.java
+          # -------------------------------------------------
+
+          java_files = list(
+              Path(
+                  "android/app/src/main/java"
+              ).rglob("MainActivity.java")
+          )
+
+          if not java_files:
+              raise SystemExit(
+                  "MainActivity.java not found"
+              )
+
+          activity = java_files[0]
+
+          original = activity.read_text()
 
           package_line = ""
 
-          for line in activity.read_text().splitlines():
+          for line in original.splitlines():
               if line.startswith("package "):
                   package_line = line
                   break
 
           if not package_line:
-              raise SystemExit("Package name not found")
+              raise SystemExit(
+                  "Package declaration not found"
+              )
 
-          new_code = f"""{package_line}
+          # -------------------------------------------------
+          # Create MainActivity
+          # -------------------------------------------------
 
-          import android.os.Bundle;
-          import android.view.Gravity;
-          import android.widget.FrameLayout;
+          new_activity = f"""{package_line}
 
-          import com.getcapacitor.BridgeActivity;
-          import com.startapp.sdk.ads.banner.Banner;
-          import com.startapp.sdk.adsbase.StartAppSDK;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 
-          public class MainActivity extends BridgeActivity {{
+import com.getcapacitor.BridgeActivity;
+import com.startapp.sdk.ads.banner.Banner;
+import com.startapp.sdk.adsbase.StartAppSDK;
 
-              @Override
-              public void onCreate(Bundle savedInstanceState) {{
-                  super.onCreate(savedInstanceState);
+public class MainActivity extends BridgeActivity {{
 
-                  StartAppSDK.initParams(this, "208328103")
-                      .setReturnAdsEnabled(false)
-                      .setCallback(() -> {{
-                          Banner banner = new Banner(this);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {{
+        super.onCreate(savedInstanceState);
 
-                          FrameLayout.LayoutParams params =
-                              new FrameLayout.LayoutParams(
-                                  FrameLayout.LayoutParams.MATCH_PARENT,
-                                  FrameLayout.LayoutParams.WRAP_CONTENT
-                              );
+        StartAppSDK.initParams(this, "208328103")
+            .setReturnAdsEnabled(false)
+            .setCallback(() -> {{
 
-                          params.gravity = Gravity.BOTTOM;
+                Banner banner = new Banner(this);
 
-                          addContentView(banner, params);
-                      }})
-                      .init();
-              }}
-          }}
-          """
+                FrameLayout.LayoutParams params =
+                    new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                    );
 
-          activity.write_text(new_code)
+                params.gravity = Gravity.BOTTOM;
 
-          print("Start.io configured successfully.")
+                addContentView(banner, params);
+            }})
+            .init();
+    }}
+}}
+"""
+
+          activity.write_text(new_activity)
+
+          print(
+              f"Start.io configured in {activity}"
+          )
+
+          # -------------------------------------------------
+          # Android permissions
+          # -------------------------------------------------
+
+          manifest = Path(
+              "android/app/src/main/AndroidManifest.xml"
+          )
+
+          if manifest.exists():
+
+              manifest_text = manifest.read_text()
+
+              internet = (
+                  '<uses-permission '
+                  'android:name="android.permission.INTERNET" />'
+              )
+
+              network = (
+                  '<uses-permission '
+                  'android:name="android.permission.ACCESS_NETWORK_STATE" />'
+              )
+
+              if "android.permission.INTERNET" not in manifest_text:
+                  pos = manifest_text.find(">")
+
+                  manifest_text = (
+                      manifest_text[:pos + 1]
+                      + "\n    "
+                      + internet
+                      + "\n    "
+                      + network
+                      + manifest_text[pos + 1:]
+                  )
+
+              elif (
+                  "android.permission.ACCESS_NETWORK_STATE"
+                  not in manifest_text
+              ):
+                  pos = manifest_text.find(">")
+
+                  manifest_text = (
+                      manifest_text[:pos + 1]
+                      + "\n    "
+                      + network
+                      + manifest_text[pos + 1:]
+                  )
+
+              manifest.write_text(manifest_text)
+
+          print("Android permissions configured.")
           PY
 
       - name: Sync Capacitor
@@ -158,3 +319,4 @@ jobs:
         with:
           name: Everyday-Problem-Solver-Release-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab
+```
