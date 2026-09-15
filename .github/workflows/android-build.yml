@@ -1,14 +1,14 @@
 ```yaml
 name: Build Android APK and AAB
 
-"on":
+on:
   workflow_dispatch:
   push:
     branches:
       - main
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web app
+      - name: Build web
         run: npm run build
 
       - name: Setup Java
@@ -38,38 +38,18 @@ jobs:
           packages: ''
 
       - name: Install Android SDK
-        run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-37"
-          sdkmanager "build-tools;35.0.0"
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Add Capacitor Android
-        run: |
-          if [ ! -d android ]; then
-            npx cap add android
-          fi
-
-      - name: Configure Android
-        run: |
-          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 37/g' android/variables.gradle || true
-          sed -i 's/compileSdk 35/compileSdk 37/g' android/app/build.gradle || true
-
-          sed -i '/dependencies {/a\    implementation "com.startapp:inapp-sdk:5.3.2"' android/app/build.gradle
-
-      - name: Update Gradle
-        run: |
-          cd android
-          ./gradlew wrapper --gradle-version 8.14.3
+      - name: Add Android
+        run: npx cap add android
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Make Gradle executable
-        run: chmod +x android/gradlew
-
       - name: Build Debug APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Build Release APK
