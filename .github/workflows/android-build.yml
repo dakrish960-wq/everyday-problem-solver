@@ -1,3 +1,4 @@
+```yaml
 name: Build Android APK and AAB
 
 on:
@@ -33,6 +34,8 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
 
       - name: Install Android SDK packages
         run: |
@@ -49,106 +52,173 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
 
+          # ---------------------------------------------------------
+          # 1. Add Start.io SDK dependency
+          # ---------------------------------------------------------
+
           app_gradle = Path("android/app/build.gradle")
 
           if not app_gradle.exists():
-              raise SystemExit("android/app/build.gradle was not created")
+              raise SystemExit(
+                  "android/app/build.gradle was not created"
+              )
 
-          text = app_gradle.read_text()
+          gradle_text = app_gradle.read_text()
 
           dependency = "implementation 'com.startapp:inapp-sdk:5.+'"
 
-          if dependency not in text:
+          if dependency not in gradle_text:
               marker = "dependencies {"
-              if marker not in text:
-                  raise SystemExit("dependencies block not found in android/app/build.gradle")
 
-              text = text.replace(
+              if marker not in gradle_text:
+                  raise SystemExit(
+                      "dependencies block not found"
+                  )
+
+              gradle_text = gradle_text.replace(
                   marker,
                   marker + "\n    " + dependency,
                   1
               )
 
-              app_gradle.write_text(text)
+              app_gradle.write_text(gradle_text)
 
           print("Start.io dependency configured.")
 
-          # Find MainActivity.java
+          # ---------------------------------------------------------
+          # 2. Find MainActivity.java
+          # ---------------------------------------------------------
+
           java_files = list(
-              Path("android/app/src/main/java").rglob("MainActivity.java")
+              Path(
+                  "android/app/src/main/java"
+              ).rglob("MainActivity.java")
           )
 
           if not java_files:
-              raise SystemExit("MainActivity.java not found")
+              raise SystemExit(
+                  "MainActivity.java not found"
+              )
 
           main_activity = java_files[0]
-          text = main_activity.read_text()
 
-          # Add imports
-          if "import android.os.Bundle;" not in text:
-              text = text.replace(
-                  "package ",
-                  "import android.os.Bundle;\n\npackage ",
-                  1
+          original = main_activity.read_text()
+
+          # ---------------------------------------------------------
+          # 3. Read package name
+          # ---------------------------------------------------------
+
+          package_line = None
+
+          for line in original.splitlines():
+              if line.startswith("package "):
+                  package_line = line
+                  break
+
+          if not package_line:
+              raise SystemExit(
+                  "Package declaration not found"
               )
 
-          if "import android.view.Gravity;" not in text:
-              text = text.replace(
-                  "import android.os.Bundle;",
-                  "import android.os.Bundle;\nimport android.view.Gravity;\nimport android.view.ViewGroup;",
-                  1
-              )
+          # ---------------------------------------------------------
+          # 4. Create correct MainActivity.java
+          # ---------------------------------------------------------
 
-          if "import com.startapp.sdk.ads.banner.Banner;" not in text:
-              text = text.replace(
-                  "import android.view.ViewGroup;",
-                  "import android.view.ViewGroup;\nimport com.startapp.sdk.ads.banner.Banner;\nimport com.startapp.sdk.adsbase.StartAppSDK;",
-                  1
-              )
+          new_activity = f'''{package_line}
 
-          # Add onCreate only once
-          if "StartAppSDK.initParams" not in text:
+          import android.os.Bundle;
+          import android.view.Gravity;
+          import android.widget.FrameLayout;
 
-              on_create = """
+          import com.getcapacitor.BridgeActivity;
+          import com.startapp.sdk.ads.banner.Banner;
+          import com.startapp.sdk.adsbase.StartAppSDK;
+
+          public class MainActivity extends BridgeActivity {{
+
               @Override
-              public void onCreate(Bundle savedInstanceState) {
+              public void onCreate(Bundle savedInstanceState) {{
                   super.onCreate(savedInstanceState);
 
                   StartAppSDK.initParams(this, "208328103")
                       .setReturnAdsEnabled(false)
-                      .setCallback(() -> {
+                      .setCallback(() -> {{
                           Banner banner = new Banner(this);
 
-                          ViewGroup.LayoutParams params =
-                              new ViewGroup.LayoutParams(
-                                  ViewGroup.LayoutParams.MATCH_PARENT,
-                                  ViewGroup.LayoutParams.WRAP_CONTENT
+                          FrameLayout.LayoutParams params =
+                              new FrameLayout.LayoutParams(
+                                  FrameLayout.LayoutParams.MATCH_PARENT,
+                                  FrameLayout.LayoutParams.WRAP_CONTENT
                               );
 
+                          params.gravity = Gravity.BOTTOM;
+
                           addContentView(banner, params);
-                          banner.setGravity(Gravity.BOTTOM);
-                      })
+                      }})
                       .init();
-              }
-              """
+              }}
+          }}
+          '''
 
-              text = text.rstrip()
+          main_activity.write_text(new_activity)
 
-              last_brace = text.rfind("}")
+          print(
+              f"Start.io configured in {main_activity}"
+          )
 
-              if last_brace == -1:
-                  raise SystemExit("Could not find end of MainActivity.java")
+          # ---------------------------------------------------------
+          # 5. Add required permissions to AndroidManifest.xml
+          # ---------------------------------------------------------
 
-              text = (
-                  text[:last_brace]
-                  + on_create
-                  + "\n"
-                  + text[last_brace:]
+          manifest = Path(
+              "android/app/src/main/AndroidManifest.xml"
+          )
+
+          if manifest.exists():
+
+              manifest_text = manifest.read_text()
+
+              internet_permission = (
+                  '<uses-permission android:name="android.permission.INTERNET" />'
               )
 
-              main_activity.write_text(text)
+              network_permission = (
+                  '<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />'
+              )
 
-          print(f"Start.io configured in {main_activity}")
+              if "android.permission.INTERNET" not in manifest_text:
+                  manifest_text = manifest_text.replace(
+                      "<manifest",
+                      "<manifest",
+                      1
+                  )
+
+                  first_close = manifest_text.find(">")
+
+                  if first_close != -1:
+                      manifest_text = (
+                          manifest_text[:first_close + 1]
+                          + "\n    "
+                          + internet_permission
+                          + "\n    "
+                          + network_permission
+                          + manifest_text[first_close + 1:]
+                      )
+
+              elif "android.permission.ACCESS_NETWORK_STATE" not in manifest_text:
+                  first_close = manifest_text.find(">")
+
+                  if first_close != -1:
+                      manifest_text = (
+                          manifest_text[:first_close + 1]
+                          + "\n    "
+                          + network_permission
+                          + manifest_text[first_close + 1:]
+                      )
+
+              manifest.write_text(manifest_text)
+
+          print("Android permissions configured.")
 
           PY
 
@@ -190,3 +260,4 @@ jobs:
         with:
           name: Everyday-Problem-Solver-Release-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab
+```
