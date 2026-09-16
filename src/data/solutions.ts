@@ -4,6 +4,9 @@ export type Solution = {
   category: string;
   quickFix: string;
   steps: string[];
+  safety?: string;
+professional?: string;
+disclaimer?: string;
 };
 
 export const solutions: Solution[] = [
