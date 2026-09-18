@@ -25,7 +25,87 @@ import {
   Clock,
   Trash2
 } from "lucide-react";
+type ToolId =
+  | "percentage"
+  | "discount"
+  | "gst"
+  | "unit"
+  | "age"
+  | "date"
+  | "emi"
+  | "bmi"
+  | "tip"
+  | "shopping";
 
+type ToolDefinition = {
+  id: ToolId;
+  title: string;
+  description: string;
+  icon: string;
+};
+
+const toolDefinitions: ToolDefinition[] = [
+  {
+    id: "percentage",
+    title: "Percentage Calculator",
+    description: "Calculate percentages, increases and decreases.",
+    icon: "🧮"
+  },
+  {
+    id: "discount",
+    title: "Discount Calculator",
+    description: "Calculate discount amount and final price.",
+    icon: "💰"
+  },
+  {
+    id: "gst",
+    title: "GST Calculator",
+    description: "Calculate GST amount and inclusive or exclusive price.",
+    icon: "📊"
+  },
+  {
+    id: "unit",
+    title: "Unit Converter",
+    description: "Convert common length, weight and temperature units.",
+    icon: "📏"
+  },
+  {
+    id: "age",
+    title: "Age Calculator",
+    description: "Calculate exact age in years, months and days.",
+    icon: "🎂"
+  },
+  {
+    id: "date",
+    title: "Date Difference",
+    description: "Find the exact difference between two dates.",
+    icon: "📅"
+  },
+  {
+    id: "emi",
+    title: "Loan / EMI Calculator",
+    description: "Estimate monthly EMI, interest and total payment.",
+    icon: "💵"
+  },
+  {
+    id: "bmi",
+    title: "BMI Calculator",
+    description: "Calculate BMI using height and weight.",
+    icon: "⚖️"
+  },
+  {
+    id: "tip",
+    title: "Tip & Bill Split",
+    description: "Calculate tip and split a bill between people.",
+    icon: "🔢"
+  },
+  {
+    id: "shopping",
+    title: "Shopping Calculator",
+    description: "Calculate quantity, price, discount and final shopping cost.",
+    icon: "🛒"
+  }
+];
 type Category = {
   id: string;
   name: string;
