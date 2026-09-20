@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { solutions, type Solution } from "./data/solutions";
 import DiscountTool from "./tools/DiscountTool";
+import GSTTool from "./GSTTool";
 import {
   Search,
   Home,
