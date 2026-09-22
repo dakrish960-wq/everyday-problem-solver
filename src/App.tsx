@@ -867,7 +867,7 @@ function App() {
           Useful calculators and everyday utilities.
         </p>
       </div>
-
+<ProfessionalTools />
       <button
         className="tool-card"
         onClick={() =>
