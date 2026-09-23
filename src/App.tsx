@@ -219,6 +219,15 @@ const HISTORY_KEY = "everyday-problem-solver-history";
 const DARK_MODE_KEY = "everyday-problem-solver-dark-mode";
 
 function App() {
+   const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 1800);
+
+    return () => clearTimeout(timer);
+  }, []);
   const [activePage, setActivePage] = useState<Page>("home");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] =
@@ -1877,7 +1886,21 @@ function App() {
         return renderHome();
     }
   };
+if (showSplash) {
+  return (
+    <div className="splash-screen">
+      <img
+        src="/splash-icon.png"
+        alt="Everyday Problem Solver"
+        className="splash-icon"
+      />
 
+      <h1>Everyday Problem Solver</h1>
+
+      <p>Simple solutions for everyday problems</p>
+    </div>
+  );
+}
   return (
     <div
       className={
