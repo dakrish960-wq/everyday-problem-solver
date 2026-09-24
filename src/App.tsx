@@ -132,7 +132,51 @@ type Page =
   | "disclaimer"
   | "offline"
   | "solution";
+type ExploreItem = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+};
 
+const exploreItems: ExploreItem[] = [
+  {
+    id: "train",
+    title: "Train",
+    description: "Learn useful train travel information.",
+    icon: "🚆"
+  },
+  {
+    id: "plane",
+    title: "Plane",
+    description: "Learn basic air travel information.",
+    icon: "✈️"
+  },
+  {
+    id: "bus",
+    title: "Bus",
+    description: "Useful bus travel tips and information.",
+    icon: "🚌"
+  },
+  {
+    id: "education",
+    title: "Education",
+    description: "Learn useful study and education tips.",
+    icon: "📚"
+  },
+  {
+    id: "singing",
+    title: "Singing",
+    description: "Explore simple singing and voice tips.",
+    icon: "🎵"
+  },
+  {
+    id: "drawing",
+    title: "Drawing",
+    description: "Learn simple drawing skills step by step.",
+    icon: "🎨"
+  }
+];
 const categories: Category[] = [
   {
     id: "phone",
