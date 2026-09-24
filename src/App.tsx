@@ -626,7 +626,98 @@ function App() {
           ))}
         </div>
       </section>
+      <section className="section explore-section">
+        <div className="section-header">
+          <h2>Explore More</h2>
+          <span>Useful & Fun</span>
+        </div>
 
+        <div className="explore-grid">
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.google.com/search?q=train+information",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">🚆</span>
+            <strong>Train</strong>
+            <small>Train information</small>
+          </button>
+
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.google.com/search?q=flight+information",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">✈️</span>
+            <strong>Plane</strong>
+            <small>Flight information</small>
+          </button>
+
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.google.com/search?q=bus+information",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">🚌</span>
+            <strong>Bus</strong>
+            <small>Bus information</small>
+          </button>
+
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.google.com/search?q=educational+resources",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">📚</span>
+            <strong>Education</strong>
+            <small>Learn something new</small>
+          </button>
+
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.youtube.com/results?search_query=singing+lessons",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">🎤</span>
+            <strong>Singing</strong>
+            <small>Learn singing</small>
+          </button>
+
+          <button
+            className="explore-card"
+            onClick={() =>
+              window.open(
+                "https://www.youtube.com/results?search_query=drawing+lessons",
+                "_blank"
+              )
+            }
+          >
+            <span className="explore-icon">🎨</span>
+            <strong>Drawing</strong>
+            <small>Learn drawing</small>
+          </button>
+        </div>
+      </section>
       <section className="section">
         <div className="section-header">
           <h2>Categories</h2>
