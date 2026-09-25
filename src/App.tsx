@@ -591,7 +591,81 @@ function App() {
           </div>
         </section>
       )}
+      {/* Explore & Learn */}
+      <section className="section">
+        <div className="section-header">
+          <h2>Explore & Learn</h2>
+        </div>
 
+        <div className="category-grid">
+          <button
+            className="category-card"
+            onClick={() => alert("Train information coming soon")}
+          >
+            <span className="category-icon">🚆</span>
+            <strong>Train</strong>
+            <small>Train travel and useful information</small>
+          </button>
+
+          <button
+            className="category-card"
+            onClick={() => alert("Plane information coming soon")}
+          >
+            <span className="category-icon">✈️</span>
+            <strong>Plane</strong>
+            <small>Air travel and useful information</small>
+          </button>
+
+          <button
+            className="category-card"
+            onClick={() => alert("Bus information coming soon")}
+          >
+            <span className="category-icon">🚌</span>
+            <strong>Bus</strong>
+            <small>Bus travel and useful information</small>
+          </button>
+
+          <button
+            className="category-card"
+            onClick={() => alert("Educational content coming soon")}
+          >
+            <span className="category-icon">📚</span>
+            <strong>Educational</strong>
+            <small>Learning and educational resources</small>
+          </button>
+
+          <button
+            className="category-card"
+            onClick={() => alert("Singing content coming soon")}
+          >
+            <span className="category-icon">🎤</span>
+            <strong>Singing</strong>
+            <small>Learn and practice singing</small>
+          </button>
+
+          <button
+            className="category-card"
+            onClick={() => alert("Drawing content coming soon")}
+          >
+            <span className="category-icon">🎨</span>
+            <strong>Drawing</strong>
+            <small>Drawing and creative learning</small>
+          </button>
+        </div>
+      </section>
+
+      {/* Popular Problems */}
+      <section className="section">
+        <div className="section-header">
+          <h2>Popular Problems</h2>
+
+          <button
+            onClick={() => {
+              setSelectedCategory(null);
+              setSearch("");
+              setActivePage("categories");
+            }}
+          >
       <section className="section">
         <div className="section-header">
           <h2>Popular Problems</h2>
