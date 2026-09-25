@@ -133,7 +133,8 @@ type Page =
   | "privacy"
   | "disclaimer"
   | "offline"
-  | "solution";
+  | "solution"
+  | "explore";
 type ExploreItem = {
   id: string;
   title: string;
