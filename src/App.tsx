@@ -655,17 +655,7 @@ function App() {
       </section>
 
       {/* Popular Problems */}
-      <section className="section">
-        <div className="section-header">
-          <h2>Popular Problems</h2>
-
-          <button
-            onClick={() => {
-              setSelectedCategory(null);
-              setSearch("");
-              setActivePage("categories");
-            }}
-          >
+      
       <section className="section">
         <div className="section-header">
           <h2>Popular Problems</h2>
