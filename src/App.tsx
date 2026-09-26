@@ -602,7 +602,7 @@ function App() {
         <div className="category-grid">
           <button
             className="category-card"
-            onClick={() => alert("Train information coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">🚆</span>
             <strong>Train</strong>
@@ -611,7 +611,7 @@ function App() {
 
           <button
             className="category-card"
-            onClick={() => alert("Plane information coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">✈️</span>
             <strong>Plane</strong>
@@ -620,7 +620,7 @@ function App() {
 
           <button
             className="category-card"
-            onClick={() => alert("Bus information coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">🚌</span>
             <strong>Bus</strong>
@@ -629,7 +629,7 @@ function App() {
 
           <button
             className="category-card"
-            onClick={() => alert("Educational content coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">📚</span>
             <strong>Educational</strong>
@@ -638,7 +638,7 @@ function App() {
 
           <button
             className="category-card"
-            onClick={() => alert("Singing content coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">🎤</span>
             <strong>Singing</strong>
@@ -647,7 +647,7 @@ function App() {
 
           <button
             className="category-card"
-            onClick={() => alert("Drawing content coming soon")}
+            onClick={() => setActivePage("explore")}
           >
             <span className="category-icon">🎨</span>
             <strong>Drawing</strong>
