@@ -3,8 +3,7 @@ import { solutions, type Solution } from "./data/solutions";
 import DiscountTool from "./tools/DiscountTool";
 import GSTTool from "./GSTTool";
 import ProfessionalTools from "./src/tools/ProfessionalTools";
-import ExploreLearn from "./tools/ExploreLearn";
-
+import ExploreLearn from "./src/tools/ExploreLearn";
 import {
   Search,
   Home,
