@@ -2060,6 +2060,9 @@ function App() {
       case "tools":
         return renderTools();
 
+        case "explore":
+  return <ExploreLearn />;
+        
       case "percentage":
         return renderPercentage();
 
