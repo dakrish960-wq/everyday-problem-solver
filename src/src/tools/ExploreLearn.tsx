@@ -93,7 +93,8 @@ export default function ExploreLearn() {
   const [singingRunning, setSingingRunning] = useState(false);
 
   const [drawing, setDrawing] = useState(false);
-
+  const [dailyCompleted, setDailyCompleted] = useState(false);
+  
   const toggleChecklist = (key: string) => {
     setChecked((previous) => ({
       ...previous,
