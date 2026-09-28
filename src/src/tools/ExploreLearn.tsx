@@ -550,6 +550,26 @@ export default function ExploreLearn() {
             Small daily practice can help you learn,
             prepare and improve.
           </p>
+       <button
+  className="tool-card"
+  onClick={() => setDailyCompleted(true)}
+>
+  <CheckCircle2 size={21} />
+
+  <div>
+    <h3>
+      {dailyCompleted
+        ? "Today's Challenge Completed 🎉"
+        : "Mark Today's Challenge Complete"}
+    </h3>
+
+    <p>
+      {dailyCompleted
+        ? "Great job! Come back tomorrow for a new challenge."
+        : "Complete an activity and mark your daily progress."}
+    </p>
+  </div>
+</button>
         </div>
       </div>
       <div className="category-grid">
