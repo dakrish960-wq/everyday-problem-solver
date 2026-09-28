@@ -533,7 +533,9 @@ export default function ExploreLearn() {
       <div className="solution-detail">
         <div className="section-header">
           <h2>Today's Progress</h2>
-          <span>0 / 1</span>
+         <span>
+  {dailyCompleted ? "1 / 1" : "0 / 1"}
+</span>
         </div>
 
         <p>
