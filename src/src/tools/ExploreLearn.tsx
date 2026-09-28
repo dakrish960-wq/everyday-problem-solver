@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  Star,
   BookOpen,
   Train,
   Plane,
@@ -497,7 +498,57 @@ export default function ExploreLearn() {
           Useful travel, learning and creative tools.
         </p>
       </div>
+      {/* Daily Challenge */}
+      <div className="hero">
+        <div className="hero-icon">
+          <Star size={30} />
+        </div>
 
+        <h1>Daily Challenge ⭐</h1>
+
+        <p>
+          Complete one small activity today and keep
+          improving every day.
+        </p>
+
+        <div
+          style={{
+            marginTop: "15px",
+            padding: "12px",
+            borderRadius: "12px",
+            background: "rgba(255,255,255,0.15)"
+          }}
+        >
+          <strong>Today's Goal</strong>
+
+          <p style={{ marginBottom: 0 }}>
+            Try one Train, Plane, Bus, Educational,
+            Singing or Drawing activity.
+          </p>
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className="solution-detail">
+        <div className="section-header">
+          <h2>Today's Progress</h2>
+          <span>0 / 1</span>
+        </div>
+
+        <p>
+          Choose any activity below and complete it
+          at your own pace.
+        </p>
+
+        <div className="quick-fix">
+          <strong>Keep going! 💪</strong>
+
+          <p>
+            Small daily practice can help you learn,
+            prepare and improve.
+          </p>
+        </div>
+      </div>
       <div className="category-grid">
         <button
           className="category-card"
