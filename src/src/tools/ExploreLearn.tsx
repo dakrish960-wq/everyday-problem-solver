@@ -574,6 +574,7 @@ export default function ExploreLearn() {
       </div>
       <div className="category-grid">
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("train")}
         >
@@ -583,6 +584,7 @@ export default function ExploreLearn() {
         </button>
 
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("plane")}
         >
@@ -592,6 +594,7 @@ export default function ExploreLearn() {
         </button>
 
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("bus")}
         >
@@ -601,6 +604,7 @@ export default function ExploreLearn() {
         </button>
 
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("education")}
         >
@@ -610,6 +614,7 @@ export default function ExploreLearn() {
         </button>
 
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("singing")}
         >
@@ -619,6 +624,7 @@ export default function ExploreLearn() {
         </button>
 
         <button
+          type="button"
           className="category-card"
           onClick={() => setSection("drawing")}
         >
