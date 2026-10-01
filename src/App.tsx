@@ -714,14 +714,11 @@ function App() {
           </button>
 
           <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.google.com/search?q=flight+information",
-                "_blank"
-              )
-            }
-          >
+            <button
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">✈️</span>
             <strong>Plane</strong>
             <small>Flight information</small>
