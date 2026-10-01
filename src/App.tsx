@@ -1451,7 +1451,22 @@ function App() {
           services may process information according
           to their own privacy policies.
         </p>
-
+        <button
+          type="button"
+          className="tool-card"
+          onClick={() =>
+            window.open(
+              "https://dakrish960-wq.github.io/everyday-problem-solver-privacy/",
+              "_blank"
+            )
+          }
+        >
+          <ShieldCheck size={22} />
+          <div>
+            <h3>View Full Privacy Policy</h3>
+            <p>Read the complete privacy policy online.</p>
+          </div>
+        </button>
         <h3>Children's Privacy</h3>
 
         <p>
