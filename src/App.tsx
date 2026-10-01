@@ -713,8 +713,8 @@ function App() {
             <small>Train information</small>
           </button>
 
+        
           <button
-            <button
   type="button"
   className="explore-card"
   onClick={() => setActivePage("explore")}
