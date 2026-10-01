@@ -699,15 +699,11 @@ function App() {
         </div>
 
         <div className="explore-grid">
-          <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.google.com/search?q=train+information",
-                "_blank"
-              )
-            }
-          >
+       <button
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">🚆</span>
             <strong>Train</strong>
             <small>Train information</small>
@@ -725,56 +721,40 @@ function App() {
           </button>
 
           <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.google.com/search?q=bus+information",
-                "_blank"
-              )
-            }
-          >
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">🚌</span>
             <strong>Bus</strong>
             <small>Bus information</small>
           </button>
 
           <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.google.com/search?q=educational+resources",
-                "_blank"
-              )
-            }
-          >
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">📚</span>
             <strong>Education</strong>
             <small>Learn something new</small>
           </button>
 
           <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.youtube.com/results?search_query=singing+lessons",
-                "_blank"
-              )
-            }
-          >
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">🎤</span>
             <strong>Singing</strong>
             <small>Learn singing</small>
           </button>
 
           <button
-            className="explore-card"
-            onClick={() =>
-              window.open(
-                "https://www.youtube.com/results?search_query=drawing+lessons",
-                "_blank"
-              )
-            }
-          >
+  type="button"
+  className="explore-card"
+  onClick={() => setActivePage("explore")}
+>
             <span className="explore-icon">🎨</span>
             <strong>Drawing</strong>
             <small>Learn drawing</small>
