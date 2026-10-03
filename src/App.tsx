@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import splashIcon from "./public/ChatGPT Image Sep 23, 2026, 11_10_38 AM.png";
 import { solutions, type Solution } from "./data/solutions";
 import DiscountTool from "./tools/DiscountTool";
 import GSTTool from "./GSTTool";
@@ -2086,10 +2087,10 @@ if (showSplash) {
   return (
     <div className="splash-screen">
       <img
-        src="/splash-icon.png"
-        alt="Everyday Problem Solver"
-        className="splash-icon"
-      />
+  src="/src/public/ChatGPT%20Image%20Sep%2023,%202026,%2011_10_38%20AM.png"
+  alt="Everyday Problem Solver"
+  className="splash-icon"
+/>
 
       <h1>Everyday Problem Solver</h1>
 
