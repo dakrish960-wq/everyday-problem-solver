@@ -2087,7 +2087,7 @@ if (showSplash) {
   return (
     <div className="splash-screen">
       <img
-  src="/src/public/ChatGPT%20Image%20Sep%2023,%202026,%2011_10_38%20AM.png"
+  src={splashIcon}
   alt="Everyday Problem Solver"
   className="splash-icon"
 />
