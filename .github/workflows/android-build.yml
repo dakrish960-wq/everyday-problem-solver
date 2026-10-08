@@ -47,7 +47,7 @@ jobs:
         run: |
           python3 -c "from pathlib import Path; p=Path('android/app/build.gradle'); t=p.read_text(); t=t.replace('dependencies {', 'dependencies {\n    implementation \'com.startapp:inapp-sdk:5.0.2\'', 1); p.write_text(t)"
 
-            - name: Configure Start.io
+      - name: Configure Start.io
         run: |
           python3 - <<'PY'
           from pathlib import Path
