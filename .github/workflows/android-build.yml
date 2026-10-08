@@ -137,8 +137,8 @@ jobs:
 
           if "signingConfig signingConfigs.release" not in text:
               text = re.sub(
-                  r"(buildTypes\\s*\\{\\s*release\\s*\\{)",
-                  r"\\1\n            signingConfig signingConfigs.release",
+                  r"(buildTypes\s*\{\s*release\s*\{)",
+                  r"\1\n            signingConfig signingConfigs.release",
                   text,
                   count=1
               )
