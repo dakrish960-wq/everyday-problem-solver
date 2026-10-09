@@ -96,6 +96,7 @@ jobs:
 
           p.write_text(t)
           PY
+
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -109,10 +110,6 @@ jobs:
           ls -lh android/upload-keystore.jks
 
       - name: Configure release signing
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -133,7 +130,11 @@ jobs:
           """
 
           if "signingConfigs {" not in text:
-              text = text.replace("android {", "android {\n" + signing_config, 1)
+              text = text.replace(
+                  "android {",
+                  "android {\n" + signing_config,
+                  1
+              )
 
           if "signingConfig signingConfigs.release" not in text:
               text = re.sub(
@@ -153,11 +154,19 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Build Release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew assembleRelease
 
       - name: Build Release AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew bundleRelease
