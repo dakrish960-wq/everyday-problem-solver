@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import splashIcon from "./public/ChatGPT Image Sep 23, 2026, 11_10_38 AM.png";
 import { solutions, type Solution } from "./data/solutions";
+import PlayZone from "./tools/PlayZone";
 import DiscountTool from "./tools/DiscountTool";
 import GSTTool from "./GSTTool";
 import ProfessionalTools from "./src/tools/ProfessionalTools";
@@ -128,6 +129,7 @@ type Page =
   | "percentage"
   | "age"
   | "loan"
+  | "play"
   | "settings"
   | "about"
   | "privacy"
@@ -2052,6 +2054,9 @@ function App() {
       case "tools":
         return renderTools();
 
+        case "play":
+  return <PlayZone />;
+        
         case "explore":
   return <ExploreLearn />;
         
