@@ -13,7 +13,7 @@ import {
   Trophy,
   Zap
 } from "lucide-react";
-import { solutions } from "../data/solutions";
+import { solutions } from "../../data/solutions";
 
 type PlaySection =
   | "menu"
