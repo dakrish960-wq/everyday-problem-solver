@@ -121,6 +121,7 @@ type Category = {
 
 type Page =
   | "home"
+  | "play"
   | "categories"
   | "category-solutions"
   | "favorites"
