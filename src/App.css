@@ -1281,3 +1281,331 @@ input:focus-visible {
 .dark .solution-card:hover > svg {
   color: #60a5fa;
 }
+/* ================================
+   PLAY ZONE UI
+   ================================ */
+
+.play-stats-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 18px 0 12px;
+}
+
+.play-stats-card > div {
+  min-width: 0;
+  padding: 15px 10px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(30, 55, 90, 0.06);
+}
+
+.play-stats-card span {
+  display: block;
+  font-size: 12px;
+  color: #748096;
+  margin-bottom: 5px;
+}
+
+.play-stats-card strong {
+  display: block;
+  font-size: 22px;
+  color: #172033;
+}
+
+.play-progress-card {
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  box-shadow: 0 4px 14px rgba(30, 55, 90, 0.06);
+}
+
+.play-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.play-progress-header strong {
+  font-size: 15px;
+}
+
+.play-progress-header span {
+  font-size: 12px;
+  color: #748096;
+  white-space: nowrap;
+}
+
+.play-progress-track {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8edf5;
+}
+
+.play-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #2563eb;
+  transition: width 0.35s ease;
+}
+
+.play-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.play-card {
+  width: 100%;
+  min-height: 105px;
+  padding: 17px;
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 13px;
+  row-gap: 4px;
+  align-items: center;
+  text-align: left;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  color: #172033;
+  box-shadow: 0 5px 16px rgba(30, 55, 90, 0.07);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.play-card:active {
+  transform: scale(0.98);
+}
+
+.play-card-icon {
+  grid-row: 1 / span 2;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: #eef3ff;
+  font-size: 26px;
+}
+
+.play-card strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.play-card small {
+  display: block;
+  color: #748096;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Play Zone detail cards */
+
+.play-reward-card,
+.play-mystery-card,
+.play-speed-start,
+.play-achievements-card,
+.play-challenge-card,
+.play-puzzle-card {
+  margin: 16px 0;
+  padding: 22px 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  box-shadow: 0 5px 18px rgba(30, 55, 90, 0.07);
+}
+
+.play-big-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #eef3ff;
+  font-size: 38px;
+}
+
+.play-reward-card,
+.play-mystery-card,
+.play-speed-start {
+  text-align: center;
+}
+
+.play-reward-card h2,
+.play-mystery-card h2,
+.play-speed-start h2 {
+  margin: 8px 0;
+  font-size: 22px;
+}
+
+.play-reward-card p,
+.play-mystery-card p,
+.play-speed-start p {
+  color: #66748a;
+  line-height: 1.55;
+}
+
+.play-mystery-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.play-mystery-meta span {
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: #f1f4f8;
+  color: #59677d;
+  font-size: 12px;
+}
+
+.play-message {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eef3ff;
+  color: #31558f;
+  line-height: 1.45;
+}
+
+.play-speed-best {
+  margin: 15px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f5f7fb;
+  color: #59677d;
+}
+
+.play-speed-best strong {
+  color: #172033;
+}
+
+.play-explanation {
+  margin-top: 15px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #eef8f0;
+  border: 1px solid #d8ecd9;
+}
+
+.play-explanation strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.play-explanation p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.disclaimer-box {
+  margin: 18px 0;
+  padding: 20px 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  box-shadow: 0 4px 15px rgba(30, 55, 90, 0.05);
+}
+
+.disclaimer-box h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.disclaimer-box p {
+  margin: 0;
+  color: #66748a;
+  line-height: 1.6;
+}
+
+/* Dark mode */
+
+.dark .play-stats-card > div,
+.dark .play-progress-card,
+.dark .play-card,
+.dark .play-reward-card,
+.dark .play-mystery-card,
+.dark .play-speed-start,
+.dark .play-achievements-card,
+.dark .play-challenge-card,
+.dark .play-puzzle-card,
+.dark .disclaimer-box {
+  background: #181e28;
+  border-color: #2b3340;
+  box-shadow: none;
+}
+
+.dark .play-stats-card strong,
+.dark .play-card strong,
+.dark .play-reward-card h2,
+.dark .play-mystery-card h2,
+.dark .play-speed-start h2,
+.dark .disclaimer-box h2 {
+  color: #f3f5f8;
+}
+
+.dark .play-stats-card span,
+.dark .play-card small,
+.dark .play-progress-header span,
+.dark .play-reward-card p,
+.dark .play-mystery-card p,
+.dark .play-speed-start p,
+.dark .disclaimer-box p {
+  color: #a3adbd;
+}
+
+.dark .play-card-icon,
+.dark .play-big-icon {
+  background: #202938;
+}
+
+.dark .play-progress-track {
+  background: #2b3340;
+}
+
+.dark .play-mystery-meta span,
+.dark .play-speed-best {
+  background: #202631;
+  color: #a3adbd;
+}
+
+.dark .play-speed-best strong {
+  color: #f3f5f8;
+}
+
+.dark .play-message {
+  background: #202b3d;
+  color: #b9cdf2;
+}
+
+.dark .play-explanation {
+  background: #1d3024;
+  border-color: #294733;
+}
+
+/* Larger screens */
+
+@media (min-width: 600px) {
+  .play-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
