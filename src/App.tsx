@@ -805,6 +805,29 @@ function App() {
           ))}
         </div>
       </section>
+   {/* Play Zone */}
+<section className="section">
+  <button
+    className="play-zone-home-card"
+    onClick={() => setActivePage("play")}
+  >
+    <div className="play-zone-home-icon">🎮</div>
+
+    <div className="play-zone-home-content">
+      <h2>Play Zone</h2>
+
+      <p>
+        Daily challenges, puzzles, mystery problems and fun mini-games.
+      </p>
+
+      <span>Play now →</span>
+    </div>
+
+    <div className="play-zone-home-arrow">
+      <ChevronRight size={24} />
+    </div>
+  </button>
+</section>
     </>
   );
 
