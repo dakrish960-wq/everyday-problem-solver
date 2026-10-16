@@ -2037,6 +2037,8 @@ function App() {
 
   const renderContent = () => {
     switch (activePage) {
+        case "play":
+      return <PlayZone />;
       case "solution":
         return renderSolution();
 
