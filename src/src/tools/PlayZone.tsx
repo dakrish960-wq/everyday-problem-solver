@@ -37,6 +37,8 @@ const LAST_PLAY_DATE_KEY =
   "everyday-problem-solver-play-last-date";
 const DAILY_REWARD_KEY =
   "everyday-problem-solver-daily-reward";
+const DAILY_CHALLENGE_KEY =
+  "everyday-problem-solver-daily-challenge";
 const BEST_SPEED_KEY =
   "everyday-problem-solver-best-speed";
 const COMPLETED_CHALLENGES_KEY =
