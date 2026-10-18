@@ -416,6 +416,11 @@ export default function PlayZone() {
       ) === today
     );
 
+    setChallengeCompletedToday(
+  getStoredString(
+    DAILY_CHALLENGE_KEY
+  ) === today
+);
     updateStreak();
   }, []);
 
