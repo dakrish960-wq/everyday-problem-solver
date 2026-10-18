@@ -359,6 +359,9 @@ export default function PlayZone() {
   const [rewardClaimed, setRewardClaimed] =
     useState(false);
 
+  const [challengeCompletedToday, setChallengeCompletedToday] =
+  useState(false);
+  
   const [selectedAnswer, setSelectedAnswer] =
     useState<number | null>(null);
 
