@@ -592,34 +592,44 @@ export default function PlayZone() {
   }
 
   function answerQuestion(
-    question: Challenge,
-    answer: number
-  ) {
-    if (showAnswer) {
-      return;
-    }
+  question: Challenge,
+  answer: number
+) {
+  if (showAnswer || challengeCompletedToday) {
+    return;
+  }
 
     setSelectedAnswer(answer);
     setShowAnswer(true);
 
     if (answer === question.answer) {
-      addXp(5);
+  addXp(5);
 
-      const nextCompleted =
-        completedChallenges + 1;
+  const nextCompleted =
+    completedChallenges + 1;
 
-      setCompletedChallenges(
-        nextCompleted
-      );
+  setCompletedChallenges(
+    nextCompleted
+  );
 
-      setStored(
-        COMPLETED_CHALLENGES_KEY,
-        nextCompleted
-      );
+  setStored(
+    COMPLETED_CHALLENGES_KEY,
+    nextCompleted
+  );
 
-      setMessage(
-        "Correct! +5 XP"
-      );
+  const today = getDateKey();
+
+  setChallengeCompletedToday(true);
+
+  setStored(
+    DAILY_CHALLENGE_KEY,
+    today
+  );
+
+  setMessage(
+    "Correct! +5 XP — Today's challenge completed."
+  );
+}
     } else {
       setMessage(
         "Not quite. Check the explanation and try again tomorrow."
