@@ -599,43 +599,42 @@ export default function PlayZone() {
     return;
   }
 
-    setSelectedAnswer(answer);
-    setShowAnswer(true);
+  setSelectedAnswer(answer);
+  setShowAnswer(true);
 
-    if (answer === question.answer) {
-  addXp(5);
+  if (answer === question.answer) {
+    addXp(5);
 
-  const nextCompleted =
-    completedChallenges + 1;
+    const nextCompleted =
+      completedChallenges + 1;
 
-  setCompletedChallenges(
-    nextCompleted
-  );
+    setCompletedChallenges(
+      nextCompleted
+    );
 
-  setStored(
-    COMPLETED_CHALLENGES_KEY,
-    nextCompleted
-  );
+    setStored(
+      COMPLETED_CHALLENGES_KEY,
+      nextCompleted
+    );
 
-  const today = getDateKey();
+    const today = getDateKey();
 
-  setChallengeCompletedToday(true);
+    setChallengeCompletedToday(true);
 
-  setStored(
-    DAILY_CHALLENGE_KEY,
-    today
-  );
+    setStored(
+      DAILY_CHALLENGE_KEY,
+      today
+    );
 
-  setMessage(
-    "Correct! +5 XP — Today's challenge completed."
-  );
-}
-    } else {
-      setMessage(
-        "Not quite. Check the explanation and try again tomorrow."
-      );
-    }
+    setMessage(
+      "Correct! +5 XP — Today's challenge completed."
+    );
+  } else {
+    setMessage(
+      "Not quite. Check the explanation and try again tomorrow."
+    );
   }
+}
 
   function claimDailyReward() {
     if (rewardClaimed) {
