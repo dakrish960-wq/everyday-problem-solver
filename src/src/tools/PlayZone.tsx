@@ -39,6 +39,8 @@ const DAILY_REWARD_KEY =
   "everyday-problem-solver-daily-reward";
 const DAILY_CHALLENGE_KEY =
   "everyday-problem-solver-daily-challenge";
+const DAILY_PUZZLE_KEY =
+  "everyday-problem-solver-daily-puzzle";
 const BEST_SPEED_KEY =
   "everyday-problem-solver-best-speed";
 const COMPLETED_CHALLENGES_KEY =
@@ -361,6 +363,9 @@ export default function PlayZone() {
 
   const [challengeCompletedToday, setChallengeCompletedToday] =
   useState(false);
+
+  const [puzzleCompletedToday, setPuzzleCompletedToday] =
+  useState(false);
   
   const [selectedAnswer, setSelectedAnswer] =
     useState<number | null>(null);
@@ -419,6 +424,11 @@ export default function PlayZone() {
     setChallengeCompletedToday(
   getStoredString(
     DAILY_CHALLENGE_KEY
+  ) === today
+);
+  setPuzzleCompletedToday(
+  getStoredString(
+    DAILY_PUZZLE_KEY
   ) === today
 );
     updateStreak();
@@ -595,9 +605,15 @@ export default function PlayZone() {
   question: Challenge,
   answer: number
 ) {
-  if (showAnswer || challengeCompletedToday) {
-    return;
-  }
+  if (
+  showAnswer ||
+  (section === "challenge" &&
+    challengeCompletedToday) ||
+  (section === "puzzle" &&
+    puzzleCompletedToday)
+) {
+  return;
+}
 
   setSelectedAnswer(answer);
   setShowAnswer(true);
