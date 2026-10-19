@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   Award,
@@ -602,55 +602,65 @@ export default function PlayZone() {
   }
 
   function answerQuestion(
-  question: Challenge,
-  answer: number
-) {
-  if (
-  showAnswer ||
-  (section === "challenge" &&
-    challengeCompletedToday) ||
-  (section === "puzzle" &&
-    puzzleCompletedToday)
-) {
-  return;
-}
+    question: Challenge,
+    answer: number
+  ) {
+    const activityCompletedToday =
+      section === "challenge"
+        ? challengeCompletedToday
+        : section === "puzzle"
+          ? puzzleCompletedToday
+          : false;
 
-  setSelectedAnswer(answer);
-  setShowAnswer(true);
+    if (showAnswer || activityCompletedToday) {
+      return;
+    }
 
-  if (answer === question.answer) {
-    addXp(5);
+    setSelectedAnswer(answer);
+    setShowAnswer(true);
 
-    const nextCompleted =
-      completedChallenges + 1;
+    if (answer === question.answer) {
+      addXp(5);
 
-    setCompletedChallenges(
-      nextCompleted
-    );
+      const nextCompleted =
+        completedChallenges + 1;
 
-    setStored(
-      COMPLETED_CHALLENGES_KEY,
-      nextCompleted
-    );
+      setCompletedChallenges(nextCompleted);
 
-    const today = getDateKey();
+      setStored(
+        COMPLETED_CHALLENGES_KEY,
+        nextCompleted
+      );
 
-    setChallengeCompletedToday(true);
+      const today = getDateKey();
 
-    setStored(
-      DAILY_CHALLENGE_KEY,
-      today
-    );
+      if (section === "challenge") {
+        setChallengeCompletedToday(true);
+        setStored(
+          DAILY_CHALLENGE_KEY,
+          today
+        );
+      }
 
-    setMessage(
-      "Correct! +5 XP — Today's challenge completed."
-    );
-  } else {
-    setMessage(
-      "Not quite. Check the explanation and try again tomorrow."
-    );
+      if (section === "puzzle") {
+        setPuzzleCompletedToday(true);
+        setStored(
+          DAILY_PUZZLE_KEY,
+          today
+        );
+      }
+
+      setMessage(
+        section === "challenge"
+          ? "Correct! +5 XP — Today's challenge completed."
+          : "Correct! +5 XP — Today's puzzle completed."
+      );
+    } else {
+      setMessage(
+        "Not quite. Check the explanation and try again tomorrow."
+      );
+    }
   }
-}
 
   function claimDailyReward() {
     if (rewardClaimed) {
@@ -796,7 +806,7 @@ export default function PlayZone() {
   function renderQuestion(
     question: Challenge,
     title: string,
-    icon: React.ReactNode
+    icon: ReactNode
   ) {
     return (
       <>
@@ -864,7 +874,11 @@ export default function PlayZone() {
                       )
                     }
                     disabled={
-                      showAnswer
+                      showAnswer ||
+                      (title === "Daily Challenge" &&
+                        challengeCompletedToday) ||
+                      (title === "Daily Puzzle" &&
+                        puzzleCompletedToday)
                     }
                   >
                     <span>
