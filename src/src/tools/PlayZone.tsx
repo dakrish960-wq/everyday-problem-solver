@@ -43,6 +43,8 @@ const DAILY_PUZZLE_KEY =
   "everyday-problem-solver-daily-puzzle";
 const BEST_SPEED_KEY =
   "everyday-problem-solver-best-speed";
+const DAILY_SPEED_XP_KEY =
+  "everyday-problem-solver-daily-speed-xp";
 const COMPLETED_CHALLENGES_KEY =
   "everyday-problem-solver-completed-challenges";
 const ACHIEVEMENTS_KEY =
@@ -355,6 +357,9 @@ export default function PlayZone() {
   const [streak, setStreak] = useState(0);
   const [bestSpeed, setBestSpeed] = useState(0);
 
+  const [speedXpClaimedToday, setSpeedXpClaimedToday] =
+    useState(false);
+
   const [completedChallenges, setCompletedChallenges] =
     useState(0);
 
@@ -394,6 +399,9 @@ export default function PlayZone() {
   const [message, setMessage] =
     useState("");
 
+  const [showMysterySteps, setShowMysterySteps] =
+    useState(false);
+
   useEffect(() => {
     setXp(
       getStoredNumber(XP_KEY)
@@ -407,29 +415,35 @@ export default function PlayZone() {
       getStoredNumber(BEST_SPEED_KEY)
     );
 
+    const today = getDateKey();
+
+    setSpeedXpClaimedToday(
+      getStoredString(DAILY_SPEED_XP_KEY) === today
+    );
+
     setCompletedChallenges(
       getStoredNumber(
         COMPLETED_CHALLENGES_KEY
       )
     );
 
-    const today = getDateKey();
+    const todayForDailyActivities = getDateKey();
 
     setRewardClaimed(
       getStoredString(
         DAILY_REWARD_KEY
-      ) === today
+      ) === todayForDailyActivities
     );
 
     setChallengeCompletedToday(
   getStoredString(
     DAILY_CHALLENGE_KEY
-  ) === today
+  ) === todayForDailyActivities
 );
   setPuzzleCompletedToday(
   getStoredString(
     DAILY_PUZZLE_KEY
-  ) === today
+  ) === todayForDailyActivities
 );
     updateStreak();
   }, []);
@@ -598,6 +612,7 @@ export default function PlayZone() {
     setSelectedAnswer(null);
     setShowAnswer(false);
     setMessage("");
+    setShowMysterySteps(false);
     setSection(target);
   }
 
@@ -765,18 +780,24 @@ export default function PlayZone() {
       );
     }
 
-    const earnedXp =
-      Math.min(
-        20,
-        finalScore * 2
-      );
+    const today = getDateKey();
+    const alreadyClaimedSpeedXp =
+      getStoredString(DAILY_SPEED_XP_KEY) === today;
+
+    const earnedXp = alreadyClaimedSpeedXp
+      ? 0
+      : Math.min(20, finalScore * 2);
 
     if (earnedXp > 0) {
       addXp(earnedXp);
+      setSpeedXpClaimedToday(true);
+      setStored(DAILY_SPEED_XP_KEY, today);
     }
 
     setMessage(
-      `Time's up! Score: ${finalScore}. +${earnedXp} XP`
+      alreadyClaimedSpeedXp
+        ? `Time's up! Score: ${finalScore}. Daily Speed Challenge XP already claimed today.`
+        : `Time's up! Score: ${finalScore}. +${earnedXp} XP`
     );
   }
 
@@ -1234,10 +1255,44 @@ export default function PlayZone() {
           </div>
 
           <div className="play-message">
-            Open this problem in the
-            main solution library to learn
-            the complete solution.
+            Quick Fix: {mysteryProblem.quickFix}
           </div>
+
+          <button
+            className="primary-button"
+            onClick={() =>
+              setShowMysterySteps((current) => !current)
+            }
+          >
+            {showMysterySteps
+              ? "Hide Full Solution"
+              : "Show Full Solution"}
+          </button>
+
+          {showMysterySteps && (
+            <div className="play-explanation">
+              <strong>Step-by-step solution</strong>
+              <ol>
+                {mysteryProblem.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+
+              {mysteryProblem.safety && (
+                <p>
+                  <strong>Safety:</strong>{" "}
+                  {mysteryProblem.safety}
+                </p>
+              )}
+
+              {mysteryProblem.professional && (
+                <p>
+                  <strong>When to get professional help:</strong>{" "}
+                  {mysteryProblem.professional}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </>
     );
@@ -1275,7 +1330,8 @@ export default function PlayZone() {
 
             <p>
               You will have 60 seconds.
-              Correct answers earn XP.
+              Correct answers improve your score.
+              XP can be claimed once per day.
             </p>
 
             <div className="play-speed-best">
