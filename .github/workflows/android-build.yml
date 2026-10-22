@@ -1,3 +1,4 @@
+```yaml
 name: Build Android APK and AAB
 
 on:
@@ -18,6 +19,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm
 
       - name: Install dependencies
         run: npm install
@@ -36,38 +38,108 @@ jobs:
         with:
           packages: ''
 
-      - name: Install Android SDK
+      - name: Install Android SDK 36
         run: |
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Add Android
         run: npx cap add android
 
+      - name: Set Android SDK 36
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("android/variables.gradle")
+
+          if not p.exists():
+              raise SystemExit("ERROR: android/variables.gradle not found")
+
+          text = p.read_text()
+
+          text = re.sub(
+              r'compileSdkVersion\s*=\s*\d+',
+              'compileSdkVersion = 36',
+              text
+          )
+
+          text = re.sub(
+              r'targetSdkVersion\s*=\s*\d+',
+              'targetSdkVersion = 36',
+              text
+          )
+
+          p.write_text(text)
+
+          print("===== Android SDK configuration =====")
+          print(text)
+          print("====================================")
+
+      - name: Verify Android SDK 36
+        run: |
+          echo "Checking Android SDK configuration..."
+
+          grep -n "compileSdkVersion" android/variables.gradle
+          grep -n "targetSdkVersion" android/variables.gradle
+
+          grep -q "compileSdkVersion = 36" android/variables.gradle
+          grep -q "targetSdkVersion = 36" android/variables.gradle
+
+          echo "SUCCESS: compileSdkVersion = 36"
+          echo "SUCCESS: targetSdkVersion = 36"
+
       - name: Add Start.io SDK
         run: |
-          python3 -c "from pathlib import Path; p=Path('android/app/build.gradle'); t=p.read_text(); t=t.replace('dependencies {', 'dependencies {\n    implementation \'com.startapp:inapp-sdk:5.0.2\'', 1); p.write_text(t)"
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("android/app/build.gradle")
+          text = p.read_text()
+
+          dependency = "implementation 'com.startapp:inapp-sdk:5.0.2'"
+
+          if dependency not in text:
+              text = text.replace(
+                  "dependencies {",
+                  "dependencies {\n    " + dependency,
+                  1
+              )
+
+          p.write_text(text)
+
+          print("Start.io SDK configured.")
+          PY
 
       - name: Configure Start.io
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          p = next(Path("android/app/src/main/java").rglob("MainActivity.java"))
+          java_files = list(
+              Path("android/app/src/main/java").rglob("MainActivity.java")
+          )
+
+          if not java_files:
+              raise SystemExit("ERROR: MainActivity.java not found")
+
+          p = java_files[0]
           t = p.read_text()
 
-          t = t.replace(
-              "import com.getcapacitor.BridgeActivity;",
-              """import com.getcapacitor.BridgeActivity;
+          if "com.startapp.sdk.ads.banner.Banner;" not in t:
+              t = t.replace(
+                  "import com.getcapacitor.BridgeActivity;",
+                  """import com.getcapacitor.BridgeActivity;
           import android.os.Bundle;
           import android.view.Gravity;
           import android.widget.FrameLayout;
           import com.startapp.sdk.ads.banner.Banner;
           import com.startapp.sdk.adsbase.StartAppSDK;"""
-          )
+              )
 
-          t = t.replace(
-              "public class MainActivity extends BridgeActivity {}",
-              """public class MainActivity extends BridgeActivity {
+          old = "public class MainActivity extends BridgeActivity {}"
+
+          new = """public class MainActivity extends BridgeActivity {
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
@@ -85,20 +157,31 @@ jobs:
 
                           params.gravity = Gravity.BOTTOM;
                           params.bottomMargin =
-                              (int) (80 * getResources().getDisplayMetrics().density);
+                              (int) (88 * getResources().getDisplayMetrics().density);
 
                           addContentView(banner, params);
                       })
                       .init();
               }
           }"""
-          )
+
+          if old in t:
+              t = t.replace(old, new)
 
           p.write_text(t)
+
+          print("Start.io configuration completed.")
           PY
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Verify final Android configuration
+        run: |
+          echo "===== FINAL ANDROID CONFIGURATION ====="
+          grep -n "compileSdkVersion" android/variables.gradle || true
+          grep -n "targetSdkVersion" android/variables.gradle || true
+          echo "========================================"
 
       - name: Decode release keystore
         env:
@@ -145,6 +228,8 @@ jobs:
               )
 
           file.write_text(text)
+
+          print("Release signing configured.")
           PY
 
       - name: Build Debug APK
@@ -171,6 +256,12 @@ jobs:
           cd android
           ./gradlew bundleRelease
 
+      - name: Verify Release AAB
+        run: |
+          test -s android/app/build/outputs/bundle/release/app-release.aab
+          echo "Release AAB created successfully."
+          ls -lh android/app/build/outputs/bundle/release/app-release.aab
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -188,3 +279,4 @@ jobs:
         with:
           name: Everyday-Problem-Solver-Release-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab
+```
